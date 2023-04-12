@@ -24,11 +24,11 @@ class Review(models.Model):
     score = models.PositiveSmallIntegerField(
         verbose_name='Рейтинг',
         validators=(
-            MinValueValidator(1, 'Допустимое значение от 1 до 10'), 
+            MinValueValidator(1, 'Допустимое значение от 1 до 10'),
            # Raises a ValidationError with a code of 'min_value' if value is less than limit_value, which may be a callable.
            # class MinValueValidator(limit_value, message=None)[source]¶
-           
-            MaxValueValidator(10, 'Допустимое значение от 1 до 10'), 
+
+            MaxValueValidator(10, 'Допустимое значение от 1 до 10'),
             # Raises a ValidationError with a code of 'max_value' if value is greater than limit_value, which may be a callable.
             # class MaxValueValidator(limit_value, message=None)[source]¶
         ),

@@ -1,34 +1,44 @@
-from rest_framework.viewsets import ModelViewSet, GenericViewSet
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework_simplejwt.tokens import AccessToken
-from rest_framework import mixins, status, filters
 from rest_framework.generics import get_object_or_404
-from rest_framework.permissions import AllowAny
+from rest_framework.viewsets import ModelViewSet
+from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework import status, filters
 from rest_framework.views import APIView
 
-from api.serializers import (UserSerializer, JwtSerializer,
-                             UsersForAdminSerializer, PersonalUserSerializer)
-from api.permissions import IsAdmin, IsPersonalOnly
 from api.service import send_email_confirmation, check_user_in_base
+from api.serializers import UserSerializer, JwtSerializer
+from api.permissions import IsAdminOrSuperuser
 from api.models import User
 
 
-class UsersForAdminViewSet(ModelViewSet):
-    """Работа с пользователями для администратора"""
+class UsersViewSet(ModelViewSet):
+    """Работа с моделю User для администратора и для изменения личных данных"""
     queryset = User.objects.all()
-    serializer_class = UsersForAdminSerializer
+    serializer_class = UserSerializer
+    http_method_names = ["get", "post", "patch", "delete"]
     lookup_field = 'username'
-    permission_classes = (IsAdmin, )
+    permission_classes = (IsAdminOrSuperuser, )
     filter_backends = (filters.SearchFilter, )
     search_fields = ('username', )
 
-
-class PersonalUserViewSet(GenericViewSet, mixins.RetrieveModelMixin,
-                          mixins.UpdateModelMixin):
-    """Работа с пользователями для администратора"""
-    queryset = User.objects.all()
-    serializer_class = PersonalUserSerializer
-    permission_classes = [IsPersonalOnly]
+    @action(
+        detail=False,
+        methods=['GET', 'PATCH'],
+        permission_classes=(IsAuthenticated,)
+    )
+    def me(self, request):
+        """Метод для изменения личных данных"""
+        if request.method == 'PATCH':
+            serializer = UserSerializer(
+                request.user, data=request.data, partial=True
+            )
+            serializer.is_valid(raise_exception=True)
+            serializer.save(role=request.user.role)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        serializer = UserSerializer(request.user)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class MakeJwtTokenAPIView(APIView):
@@ -42,13 +52,12 @@ class MakeJwtTokenAPIView(APIView):
                 User, username=serializer.data['username']
             )
             if user.confirmation_code == serializer.data['confirmation_code']:
-                token = AccessToken.for_user(user)
-                return Response(
-                    {'token': str(token)}, status=status.HTTP_200_OK
-                )
-            return Response({
-                'confirmation code': 'Некорректный код подтверждения!'},
-                status=status.HTTP_400_BAD_REQUEST)
+                token = str(AccessToken.for_user(user))
+                return Response({'token': token}, status=status.HTTP_200_OK)
+            return Response(
+                {'confirmation code': 'Некорректный код подтверждения!'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
 
 class SignUpAPIView(APIView):
@@ -56,19 +65,14 @@ class SignUpAPIView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
-        if check_user_in_base(request):
-            send_email_confirmation(username=request.data['username'])
-            return Response({
-                "username": request.data['username'],
-                "email": request.data['email']},
-                status=status.HTTP_200_OK)
         serializer = UserSerializer(data=request.data)
-        if serializer.is_valid(raise_exception=True):
-            username = serializer.data['username']
-            email = serializer.data['email']
-            User.objects.get_or_create(username=username, email=email)
-            send_email_confirmation(username=username)
-            return Response({
-                "username": username, "email": email},
-                status=status.HTTP_200_OK)
-
+        username = request.data.get('username')
+        email = request.data.get('email')
+        if check_user_in_base(request):
+            pass
+        elif serializer.is_valid(raise_exception=True):
+            User.objects.create(username=username, email=email)
+        send_email_confirmation(username=username)
+        return Response(
+            {"username": username, "email": email}, status=status.HTTP_200_OK
+        )
