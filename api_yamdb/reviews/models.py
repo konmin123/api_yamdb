@@ -1,7 +1,8 @@
-# from .models import Title
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
-# from .models import User
+
+from api.models import Title
+from api.models import User
 
 
 # отзывы на произведения
@@ -50,6 +51,7 @@ class Review(models.Model):
                 name='unique_review',
             ),
         )
+
 
 # комментарии к отзывам
 class Comment(models.Model):
