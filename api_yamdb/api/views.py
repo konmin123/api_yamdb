@@ -29,7 +29,7 @@ class UsersViewSet(ModelViewSet):
         permission_classes=(IsAuthenticated,)
     )
     def me(self, request):
-        """Метод для изменения личных данных"""
+        """Метод для изменения личных данных пользователя"""
         if request.method == 'PATCH':
             serializer = UserSerializer(
                 request.user, data=request.data, partial=True
