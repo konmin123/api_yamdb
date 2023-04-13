@@ -6,7 +6,7 @@ from .views import MakeJwtTokenAPIView, UsersViewSet, SignUpAPIView
 app_name = 'api'
 
 router_v1 = routers.DefaultRouter()
-router_v1.register(r'v1/users', UsersViewSet)
+router_v1.register(r'v1/', UsersViewSet)
 
 urlpatterns = [
     path('', include(router_v1.urls)),

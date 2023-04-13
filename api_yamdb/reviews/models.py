@@ -1,10 +1,10 @@
-# from .models import Title
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
-# from .models import User
+
+from api.models import Title
+from api.models import User
 
 
-# отзывы на произведения
 class Review(models.Model):
     title = models.ForeignKey(
         Title,
@@ -17,33 +17,26 @@ class Review(models.Model):
     )
     author = models.ForeignKey(
         User,
-        verbose_name='Пользователь_автор',
+        verbose_name='Автор отзыва',
         on_delete=models.CASCADE,
         related_name='reviews',
     )
     score = models.PositiveSmallIntegerField(
         verbose_name='Рейтинг',
         validators=(
-            MinValueValidator(1, 'Допустимое значение от 1 до 10'),
-           # Raises a ValidationError with a code of 'min_value' if value is less than limit_value, which may be a callable.
-           # class MinValueValidator(limit_value, message=None)[source]¶
-
-            MaxValueValidator(10, 'Допустимое значение от 1 до 10'),
-            # Raises a ValidationError with a code of 'max_value' if value is greater than limit_value, which may be a callable.
-            # class MaxValueValidator(limit_value, message=None)[source]¶
+            MinValueValidator(1, 'Можно ввести число от 1 до 10'),
+            MaxValueValidator(10, 'Можно ввести число от 1 до 10'),
         ),
     )
     pub_date = models.DateTimeField(
         verbose_name='Дата публикации',
         auto_now_add=True,
-        db_index=True,
     )
 
     class Meta:
         verbose_name = 'Отзыв'
         verbose_name_plural = 'Отзывы'
         ordering = ('pub_date',)
-        # Создает уникальное ограничение в базе данных:
         constraints = (
             models.UniqueConstraint(
                 fields=('title', 'author',),
@@ -51,27 +44,29 @@ class Review(models.Model):
             ),
         )
 
-# комментарии к отзывам
+    def __str__(self):
+        return f'произведение {self.pk}'
+
+
 class Comment(models.Model):
     review = models.ForeignKey(
         Review,
-        verbose_name='Отзывы_пользователей',
+        verbose_name='Комментарий к отзыву',
         on_delete=models.CASCADE,
         related_name='comments',
     )
     text = models.TextField(
-        verbose_name='Текст_отзыва',
+        verbose_name='Текст комментария',
     )
     author = models.ForeignKey(
         User,
-        verbose_name='Пользователь',
+        verbose_name='Автор',
         on_delete=models.CASCADE,
         related_name='comments',
     )
     pub_date = models.DateTimeField(
         verbose_name='Дата публикации',
         auto_now_add=True,
-        db_index=True,
     )
 
     class Meta:
