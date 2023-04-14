@@ -35,7 +35,7 @@ class User(AbstractUser):
 
 
 class Category(models.Model):
-    name = models.CharField(max_length=30)
+    name = models.CharField(max_length=256)
     slug = models.SlugField(unique=True)
 
     class Meta:
@@ -47,7 +47,7 @@ class Category(models.Model):
 
 
 class Genres(models.Model):
-    name = models.CharField(max_length=30)
+    name = models.CharField(max_length=256)
     slug = models.SlugField(unique=True)
 
     class Meta:
@@ -61,7 +61,7 @@ class Genres(models.Model):
 class Title(models.Model):
     name = models.CharField(
         'Название произведения',
-        max_length=100
+        max_length=256
     )
     year = models.PositiveSmallIntegerField(
         'Год публикации',
@@ -69,8 +69,8 @@ class Title(models.Model):
         blank=True,
         db_index=True,
         validators=(
-            MinValueValidator(1, 'min'),
-            MaxValueValidator(2023, 'max')
+            MinValueValidator(1, 'Минимальный год : 1'),
+            MaxValueValidator(2023, 'Максимальный год: 2023')
         ),
     )
     description = models.TextField(
@@ -78,6 +78,7 @@ class Title(models.Model):
     )
     rating = models.PositiveSmallIntegerField(
         'Рейтинг',
+        null=True,
         blank=True,
         db_index=True,
         validators=(
@@ -87,6 +88,7 @@ class Title(models.Model):
     )
     genre = models.ManyToManyField(
         Genres,
+        related_name='genre'
     )
     category = models.ForeignKey(
         Category,
@@ -94,7 +96,7 @@ class Title(models.Model):
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        related_name='title'
+        related_name='category'
     )
 
     class Meta:
