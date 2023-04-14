@@ -6,12 +6,11 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework import status, filters
 from rest_framework.views import APIView
-
-from django_filters.rest_framework import DjangoFilterBackend
-
 from rest_framework import viewsets, mixins
 
-from .serializers import ReviewSerializer, CommentSerializer, CategorySerializer, GenreSerializer
+from .serializers import (
+    ReviewSerializer, CommentSerializer, CategorySerializer, GenreSerializer
+)
 from .permissions import IsAdminSuperuserUserOrReadOnly, IsAdminOrReadOnly
 from .models import Review, Category, Genres
 from .models import Title
