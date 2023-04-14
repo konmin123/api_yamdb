@@ -7,9 +7,13 @@ from rest_framework.response import Response
 from rest_framework import status, filters
 from rest_framework.views import APIView
 
-from .serializers import ReviewSerializer, CommentSerializer
-from .permissions import IsAdminSuperuserUserOrReadOnly
-from .models import Review
+from django_filters.rest_framework import DjangoFilterBackend
+
+from rest_framework import viewsets, mixins
+
+from .serializers import ReviewSerializer, CommentSerializer, CategorySerializer, GenreSerializer
+from .permissions import IsAdminSuperuserUserOrReadOnly, IsAdminOrReadOnly
+from .models import Review, Category, Genres
 from .models import Title
 from .service import send_email_confirmation, check_user_in_base
 from .serializers import UserSerializer, JwtSerializer
@@ -23,9 +27,9 @@ class UsersViewSet(ModelViewSet):
     serializer_class = UserSerializer
     http_method_names = ["get", "post", "patch", "delete"]
     lookup_field = 'username'
-    permission_classes = (IsAdminOrSuperuser, )
-    filter_backends = (filters.SearchFilter, )
-    search_fields = ('username', )
+    permission_classes = (IsAdminOrSuperuser,)
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ('username',)
 
     @action(
         detail=False,
@@ -108,3 +112,28 @@ class CommentViewSet(ModelViewSet):
         review_id = self.kwargs.get('review_id')
         review = get_object_or_404(Review, id=review_id, title=title_id)
         serializer.save(author=self.request.user, review=review)
+
+
+class CategoryViewSet(viewsets.GenericViewSet,
+                      mixins.ListModelMixin,
+                      mixins.CreateModelMixin,
+                      mixins.DestroyModelMixin):
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
+    permission_classes = [IsAdminOrReadOnly]
+    filter_backends = [filters.SearchFilter]
+    search_fields = ('name',)
+    lookup_field = 'slug'
+
+
+class GenresViewSet(viewsets.GenericViewSet,
+                    mixins.ListModelMixin,
+                    mixins.CreateModelMixin,
+                    mixins.DestroyModelMixin):
+    queryset = Genres.objects.all()
+    serializer_class = GenreSerializer
+    permission_classes = [IsAdminOrReadOnly]
+    filter_backends = [filters.SearchFilter]
+    search_fields = ('name',)
+    lookup_field = 'slug'
+
