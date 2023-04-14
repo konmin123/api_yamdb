@@ -1,15 +1,21 @@
 from rest_framework.validators import UniqueTogetherValidator
 from rest_framework import serializers
 
-from .models import Comment, Review
-from .models import User
+from .models import Comment, Review, Category
+from .models import User, Genres
 
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('username', 'email', 'first_name',
-                  'last_name', 'bio', 'role')
+        fields = (
+            'username',
+            'email',
+            'first_name',
+            'last_name',
+            'bio',
+            'role'
+        )
 
     def validate(self, data):
         if data.get('username') == 'me':
@@ -64,3 +70,17 @@ class CommentSerializer(serializers.ModelSerializer):
             'author',
             'pub_date',
         )
+
+
+class CategorySerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Category
+        fields = ('name', 'slug')
+
+
+class GenreSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Genres
+        fields = ('name', 'slug')
