@@ -1,7 +1,7 @@
 from django.urls import include, path
 from rest_framework import routers
 
-from .views import MakeJwtTokenAPIView, UsersViewSet, SignUpAPIView
+from reviews.views import MakeJwtTokenAPIView, UsersViewSet, SignUpAPIView
 
 app_name = 'api'
 

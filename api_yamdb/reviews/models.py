@@ -1,10 +1,110 @@
-# from .models import Title
 from django.core.validators import MaxValueValidator, MinValueValidator
+from django.contrib.auth.models import AbstractUser
 from django.db import models
-# from .models import User
 
 
-# отзывы на произведения
+class User(AbstractUser):
+    class Status(models.TextChoices):
+        USER = 'user', 'пользователь'
+        MODERATOR = 'moderator', 'модератор'
+        ADMIN = 'admin', 'администратор'
+
+    email = models.EmailField(
+        'Электронная почта',
+        unique=True,
+        max_length=254
+    )
+    role = models.CharField(
+        'Статус пользователя',
+        max_length=9,
+        choices=Status.choices,
+        default=Status.USER
+    )
+    bio = models.TextField(
+        'Биография',
+        blank=True,
+    )
+    confirmation_code = models.CharField(max_length=255)
+
+    class Meta:
+        verbose_name = 'Пользователь'
+        verbose_name_plural = 'Пользователи'
+
+    def __str__(self):
+        return self.username
+
+
+class Category(models.Model):
+    name = models.CharField(max_length=30)
+    slug = models.SlugField(unique=True)
+
+    class Meta:
+        verbose_name = 'Категория'
+        verbose_name_plural = 'Категории'
+
+    def __str__(self):
+        return self.name
+
+
+class Genres(models.Model):
+    name = models.CharField(max_length=30)
+    slug = models.SlugField(unique=True)
+
+    class Meta:
+        verbose_name = 'Жанр'
+        verbose_name_plural = 'Жанры'
+
+    def __str__(self):
+        return self.name
+
+
+class Title(models.Model):
+    name = models.CharField(
+        'Название произведения',
+        max_length=100
+    )
+    year = models.PositiveSmallIntegerField(
+        'Год публикации',
+        null=False,
+        blank=True,
+        db_index=True,
+        validators=(
+            MinValueValidator(1, 'min'),
+            MaxValueValidator(2023, 'max')
+        ),
+    )
+    description = models.TextField(
+        'Описание',
+    )
+    rating = models.PositiveSmallIntegerField(
+        'Рейтинг',
+        blank=True,
+        db_index=True,
+        validators=(
+            MinValueValidator(1, 'Минимальное значение: 0'),
+            MaxValueValidator(10, 'Максимальное значение: 10')
+        ),
+    )
+    genre = models.ManyToManyField(
+        Genres,
+    )
+    category = models.ForeignKey(
+        Category,
+        verbose_name='Категория',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='title'
+    )
+
+    class Meta:
+        verbose_name = 'Произведение'
+        verbose_name_plural = 'Произведения'
+
+    def __str__(self):
+        return self.name
+
+
 class Review(models.Model):
     title = models.ForeignKey(
         Title,
@@ -17,33 +117,26 @@ class Review(models.Model):
     )
     author = models.ForeignKey(
         User,
-        verbose_name='Пользователь_автор',
+        verbose_name='Автор отзыва',
         on_delete=models.CASCADE,
         related_name='reviews',
     )
     score = models.PositiveSmallIntegerField(
         verbose_name='Рейтинг',
         validators=(
-            MinValueValidator(1, 'Допустимое значение от 1 до 10'),
-           # Raises a ValidationError with a code of 'min_value' if value is less than limit_value, which may be a callable.
-           # class MinValueValidator(limit_value, message=None)[source]¶
-
-            MaxValueValidator(10, 'Допустимое значение от 1 до 10'),
-            # Raises a ValidationError with a code of 'max_value' if value is greater than limit_value, which may be a callable.
-            # class MaxValueValidator(limit_value, message=None)[source]¶
+            MinValueValidator(1, 'Можно ввести число от 1 до 10'),
+            MaxValueValidator(10, 'Можно ввести число от 1 до 10'),
         ),
     )
     pub_date = models.DateTimeField(
         verbose_name='Дата публикации',
         auto_now_add=True,
-        db_index=True,
     )
 
     class Meta:
         verbose_name = 'Отзыв'
         verbose_name_plural = 'Отзывы'
         ordering = ('pub_date',)
-        # Создает уникальное ограничение в базе данных:
         constraints = (
             models.UniqueConstraint(
                 fields=('title', 'author',),
@@ -51,27 +144,29 @@ class Review(models.Model):
             ),
         )
 
-# комментарии к отзывам
+    def __str__(self):
+        return f'произведение {self.pk}'
+
+
 class Comment(models.Model):
     review = models.ForeignKey(
         Review,
-        verbose_name='Отзывы_пользователей',
+        verbose_name='Комментарий к отзыву',
         on_delete=models.CASCADE,
         related_name='comments',
     )
     text = models.TextField(
-        verbose_name='Текст_отзыва',
+        verbose_name='Текст комментария',
     )
     author = models.ForeignKey(
         User,
-        verbose_name='Пользователь',
+        verbose_name='Автор',
         on_delete=models.CASCADE,
         related_name='comments',
     )
     pub_date = models.DateTimeField(
         verbose_name='Дата публикации',
         auto_now_add=True,
-        db_index=True,
     )
 
     class Meta:
