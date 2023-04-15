@@ -1,23 +1,24 @@
 from rest_framework.permissions import AllowAny, IsAuthenticated
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import viewsets, mixins, status, filters
 from rest_framework_simplejwt.tokens import AccessToken
 from rest_framework.generics import get_object_or_404
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework import status, filters
 from rest_framework.views import APIView
-from rest_framework import viewsets, mixins
+from django.db.models import Avg
 
-from .serializers import (
-    ReviewSerializer, CommentSerializer, CategorySerializer, GenreSerializer
-)
-from .permissions import IsAdminSuperuserUserOrReadOnly, IsAdminOrReadOnly
-from .models import Review, Category, Genres
-from .models import Title
+from .filters import TitleFilter
+from .models import Review, Category, Genres, Title, User
 from .service import send_email_confirmation, check_user_in_base
-from .serializers import UserSerializer, JwtSerializer
-from .permissions import IsAdminOrSuperuser
-from .models import User
+from .permissions import (
+    IsAdminSuperuserUserOrReadOnly, IsAdminOrReadOnly, IsAdminOrSuperuser
+)
+from .serializers import (
+    ReviewSerializer, CommentSerializer, CategorySerializer, GenreSerializer,
+    TitleSerializer, TitleListSerializer, UserSerializer, JwtSerializer
+)
 
 
 class UsersViewSet(ModelViewSet):
@@ -136,3 +137,14 @@ class GenresViewSet(viewsets.GenericViewSet,
     search_fields = ('name',)
     lookup_field = 'slug'
 
+
+class TitleViewSet(viewsets.ModelViewSet):
+    queryset = Title.objects.annotate(rating=Avg('reviews__score')).all()
+    permission_classes = [IsAdminOrReadOnly]
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = TitleFilter
+
+    def get_serializer_class(self):
+        if self.request.method == 'GET':
+            return TitleListSerializer
+        return TitleSerializer

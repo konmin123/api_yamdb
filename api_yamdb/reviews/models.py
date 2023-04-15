@@ -76,16 +76,6 @@ class Title(models.Model):
     description = models.TextField(
         'Описание',
     )
-    rating = models.PositiveSmallIntegerField(
-        'Рейтинг',
-        null=True,
-        blank=True,
-        db_index=True,
-        validators=(
-            MinValueValidator(1, 'Минимальное значение: 0'),
-            MaxValueValidator(10, 'Максимальное значение: 10')
-        ),
-    )
     genre = models.ManyToManyField(
         Genres,
         related_name='genre'
