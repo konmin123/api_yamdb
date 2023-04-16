@@ -11,7 +11,7 @@ def send_email_confirmation(username):
     user = get_object_or_404(User, username=username)
     confirmation_code = str(uuid.uuid3(uuid.NAMESPACE_DNS, username))
     user.confirmation_code = confirmation_code
-    mail_header = f'Регистрация пользователя завершена успешно!'
+    mail_header = 'Регистрация пользователя завершена успешно!'
     mail_body = f'Ваш код для получения JWT токена {user.confirmation_code}'
     send_mail(mail_header, mail_body, settings.EMAIL_HOST_USER, [user.email])
     user.save()
