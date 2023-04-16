@@ -3,20 +3,17 @@ from rest_framework import permissions
 
 class IsAdminOrSuperuser(permissions.BasePermission):
     """
-    Доступ только администратору или суперюзеру
+    Права доступа для администратора или суперюзера.
     """
-
     def has_permission(self, request, view):
         if request.user.is_authenticated:
-            user = request.user
-            return user.is_superuser or user.role == 'admin'
+            return request.user.is_superuser or request.user.role == 'admin'
         return False
 
 
 class IsAdminSuperuserUserOrReadOnly(permissions.BasePermission):
     """
-    Права на изменения для админа, суперюзера и автора
-    для отзывов и комментариев.
+    Права доступа для админа, модератера, суперюзера и автора.
     """
 
     def has_permission(self, request, view):
@@ -36,14 +33,10 @@ class IsAdminSuperuserUserOrReadOnly(permissions.BasePermission):
 
 class IsAdminOrReadOnly(permissions.BasePermission):
     """
-    Только администратор может создавать Жанры/Категории,
-    остальные пользователи - только чтение.
+    Права доступа для админа, суперюзера или чтение.
     """
 
     def has_permission(self, request, view):
-        return (
-                request.method in permissions.SAFE_METHODS
-                or request.user.is_superuser
-                or request.user.is_authenticated
-                and request.user.role == 'admin'
-        )
+        if request.user.is_authenticated:
+            return request.user.role == 'admin' or request.user.is_superuser
+        return request.method in permissions.SAFE_METHODS
