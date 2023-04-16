@@ -7,6 +7,7 @@ from .models import User
 
 
 def send_email_confirmation(username):
+    """Отправка кода подтверждения по email."""
     user = get_object_or_404(User, username=username)
     confirmation_code = str(uuid.uuid3(uuid.NAMESPACE_DNS, username))
     user.confirmation_code = confirmation_code
@@ -17,6 +18,7 @@ def send_email_confirmation(username):
 
 
 def check_user_in_base(request):
+    """Проверка наличия пользователя в БД."""
     if request.data.get('username') and request.data.get('email'):
         username = request.data.get('username')
         email = request.data.get('email')
