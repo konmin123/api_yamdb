@@ -90,7 +90,7 @@ POST /api/v1/titles/{title_id}/reviews/{review_id}/comments/
 
 ***Документация для API после установки доступна по адресу:***
 ```
-http://127.0.0.1/redoc/
+http://127.0.0.1:8000/redoc/
 ```
 или
 ```
