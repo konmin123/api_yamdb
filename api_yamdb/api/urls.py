@@ -2,7 +2,7 @@ from django.urls import include, path
 from rest_framework import routers
 
 from .v1.views import (CategoryViewSet, GenresViewSet, ReviewViewSet,
-                           CommentViewSet, TitleViewSet)
+                       CommentViewSet, TitleViewSet)
 from .v1.views import MakeJwtTokenAPIView, UsersViewSet, SignUpAPIView
 
 
