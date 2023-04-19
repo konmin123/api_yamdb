@@ -127,3 +127,6 @@ SWAGGER_SETTINGS = {
         }
     }
 }
+
+PASSWORD_RESET_TIMEOUT = 30
+
