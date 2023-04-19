@@ -18,13 +18,16 @@ from .permissions import IsAdminOrSuperuser
 from .permissions import IsAdminSuperuserUserOrReadOnly, IsAdminOrReadOnly
 from .serializers import (
     ReviewSerializer, CommentSerializer, CategorySerializer, GenreSerializer,
-    TitleSerializer, TitleListSerializer, SignUpSerializer
+    TitleSerializer, TitleListSerializer
 )
 from .serializers import UserSerializer, JwtSerializer
 from .service import send_email_confirmation
 
 
 class ReviewViewSet(ModelViewSet):
+    """
+    Класс реализующий методы работы с отзывами.
+    """
     serializer_class = ReviewSerializer
     permission_classes = (IsAdminSuperuserUserOrReadOnly,)
 
@@ -38,6 +41,9 @@ class ReviewViewSet(ModelViewSet):
 
 
 class CommentViewSet(ModelViewSet):
+    """
+    Класс реализующий методы работы с комментариями.
+    """
     serializer_class = CommentSerializer
     permission_classes = (IsAdminSuperuserUserOrReadOnly,)
 
@@ -61,16 +67,25 @@ class CustomCategoryGenresViewSet(viewsets.GenericViewSet,
 
 
 class CategoryViewSet(CustomCategoryGenresViewSet):
+    """
+    Класс реализующий методы работы с категориями.
+    """
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
 
 
 class GenresViewSet(CustomCategoryGenresViewSet):
+    """
+    Класс реализующий методы работы с жанрами.
+    """
     queryset = Genres.objects.all()
     serializer_class = GenreSerializer
 
 
 class TitleViewSet(viewsets.ModelViewSet):
+    """
+    Класс реализующий методы работы с произведениями.
+    """
     queryset = Title.objects.annotate(rating=Avg('reviews__score')).all()
     permission_classes = (IsAdminOrReadOnly,)
     filter_backends = (DjangoFilterBackend,)
@@ -83,7 +98,9 @@ class TitleViewSet(viewsets.ModelViewSet):
 
 
 class UsersViewSet(ModelViewSet):
-    """Работа с моделю User для администратора и для изменения личных данных"""
+    """
+    Работа с моделю User для администратора и для изменения личных данных.
+    """
     queryset = User.objects.all()
     serializer_class = UserSerializer
     http_method_names = ('get', 'post', 'patch', 'delete')
@@ -98,7 +115,9 @@ class UsersViewSet(ModelViewSet):
         permission_classes=(IsAuthenticated,)
     )
     def me(self, request):
-        """Метод для изменения личных данных пользователя"""
+        """
+        Метод для изменения личных данных пользователя.
+        """
         if request.method == 'PATCH':
             serializer = UserSerializer(
                 request.user, data=request.data, partial=True
@@ -111,7 +130,9 @@ class UsersViewSet(ModelViewSet):
 
 
 class MakeJwtTokenAPIView(APIView):
-    """Выдача зарегистрированному пользователю JWT токена"""
+    """
+    Выдача зарегистрированному пользователю JWT токена.
+    """
     permission_classes = [AllowAny]
 
     def post(self, request):
@@ -131,19 +152,24 @@ class MakeJwtTokenAPIView(APIView):
 
 
 class SignUpAPIView(APIView):
-    """Выдача зарегистрированному пользователю JWT токена"""
+    """
+    Регистрация пользователя или повторная отправка кода для получения токена.
+    """
     permission_classes = [AllowAny]
 
     def post(self, request):
-        serializer = SignUpSerializer(data=request.data)
+        serializer = UserSerializer(data=request.data)
         username = request.data.get('username')
         email = request.data.get('email')
-        if serializer.is_valid(raise_exception=True):
-            user = User.objects.get_or_create(
-                username=username, email=email)[0]
-            confirmation_code = default_token_generator.make_token(user)
-            send_email_confirmation(user, confirmation_code)
-            return Response(
-                {"username": username, "email": email},
-                status=status.HTTP_200_OK
-            )
+
+        if User.objects.filter(username=username, email=email).exists():
+            user = User.objects.filter(username=username, email=email)[0]
+        else:
+            serializer.is_valid(raise_exception=True)
+            user = User.objects.create(username=username, email=email)
+
+        confirmation_code = default_token_generator.make_token(user)
+        send_email_confirmation(user, confirmation_code)
+        return Response(
+            {"username": username, "email": email}, status=status.HTTP_200_OK
+        )

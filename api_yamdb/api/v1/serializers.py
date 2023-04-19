@@ -1,10 +1,7 @@
-from rest_framework import serializers
-
 from reviews.models import Comment, Review, Category, Genres, Title
 from rest_framework import serializers
-from users.models import User
 
-USERNAME_CHECK = r'^[\w.@+-]+$'
+from users.models import User
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -20,31 +17,9 @@ class UserSerializer(serializers.ModelSerializer):
         return data
 
 
-class SignUpSerializer(serializers.Serializer):
-    username = serializers.RegexField(
-        regex=USERNAME_CHECK,
-        max_length=150,
-        required=True,
-    )
-    email = serializers.EmailField(
-        max_length=254,
-        required=True)
-
-    def validate(self, data):
-        if data.get('username') == 'me':
-            raise serializers.ValidationError('Username указан неверно!')
-        return data
-
-
 class JwtSerializer(serializers.Serializer):
-    username = serializers.CharField(
-        max_length=200,
-        required=True
-    )
-    confirmation_code = serializers.CharField(
-        max_length=200,
-        required=True
-    )
+    username = serializers.CharField(max_length=200, required=True)
+    confirmation_code = serializers.CharField(max_length=200, required=True)
 
 
 class ReviewSerializer(serializers.ModelSerializer):

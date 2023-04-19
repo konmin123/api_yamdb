@@ -23,9 +23,6 @@ class User(AbstractUser):
         'Биография',
         blank=True,
     )
-    confirmation_code = models.CharField(
-        max_length=254
-    )
 
     class Meta:
         verbose_name = 'Пользователь'
