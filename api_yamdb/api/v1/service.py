@@ -1,4 +1,5 @@
 import uuid
+import datetime as dt
 from django.conf import settings
 from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
@@ -25,3 +26,10 @@ def check_user_in_base(request):
         return User.objects.filter(
             username=username).filter(email=email).exists()
     return False
+
+
+def actual_year():
+    """
+    Функция actual_year возвращает текущий год в формате int.
+    """
+    return dt.datetime.now().year
