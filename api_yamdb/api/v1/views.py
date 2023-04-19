@@ -1,6 +1,3 @@
-from .permissions import IsAdminOrSuperuser
-from .permissions import (IsAdminSuperuserUserOrReadOnly,
-                                IsAdminOrReadOnly)
 from django.db.models import Avg
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, status
@@ -13,9 +10,11 @@ from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
 from rest_framework_simplejwt.tokens import AccessToken
 
-from .filters import TitleFilter
 from reviews.models import Review, Category, Genres, Title
 from users.models import User
+from .filters import TitleFilter
+from .permissions import IsAdminOrSuperuser
+from .permissions import IsAdminSuperuserUserOrReadOnly, IsAdminOrReadOnly
 from .serializers import (
     ReviewSerializer, CommentSerializer, CategorySerializer, GenreSerializer,
     TitleSerializer, TitleListSerializer
