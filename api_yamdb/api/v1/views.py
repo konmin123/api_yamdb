@@ -1,3 +1,4 @@
+from django.contrib.auth.tokens import default_token_generator
 from django.db.models import Avg
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, status
@@ -9,9 +10,9 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
 from rest_framework_simplejwt.tokens import AccessToken
-
 from reviews.models import Review, Category, Genres, Title
 from users.models import User
+
 from .filters import TitleFilter
 from .permissions import IsAdminOrSuperuser
 from .permissions import IsAdminSuperuserUserOrReadOnly, IsAdminOrReadOnly
@@ -82,7 +83,11 @@ class TitleViewSet(viewsets.ModelViewSet):
 
 
 class SignUpAPIView(APIView):
-    """Выдача зарегистрированному пользователю JWT токена"""
+    """
+    Создает нового пользователя, если email и username
+    уникальны, и отправляет письмо с подтверждением
+    на указанный email.
+    """
     permission_classes = [AllowAny]
 
     def post(self, request):
@@ -92,7 +97,7 @@ class SignUpAPIView(APIView):
         if check_user_in_base(request):
             pass
         elif serializer.is_valid(raise_exception=True):
-            User.objects.create(username=username, email=email)
+            User.objects.get_or_create(username=username, email=email)
         send_email_confirmation(username=username)
         return Response(
             {"username": username, "email": email}, status=status.HTTP_200_OK
@@ -128,19 +133,43 @@ class UsersViewSet(ModelViewSet):
 
 
 class MakeJwtTokenAPIView(APIView):
-    """Выдача зарегистрированному пользователю JWT токена"""
+    """API view для создания JWT токена."""
     permission_classes = [AllowAny]
 
     def post(self, request):
         serializer = JwtSerializer(data=request.data)
         if serializer.is_valid(raise_exception=True):
             user = get_object_or_404(
-                User, username=serializer.data['username']
+                User, username=serializer.validated_data['username']
             )
-            if user.confirmation_code == serializer.data['confirmation_code']:
-                token = str(AccessToken.for_user(user))
-                return Response({'token': token}, status=status.HTTP_200_OK)
+            token = serializer.validated_data['confirmation_code']
+            if default_token_generator.check_token(user, token):
+                access_token = str(AccessToken.for_user(user))
+                return Response({'token': access_token}, status=status.HTTP_200_OK)
             return Response(
                 {'confirmation code': 'Некорректный код подтверждения!'},
                 status=status.HTTP_400_BAD_REQUEST
             )
+
+# @api_view(['POST'])
+# @permission_classes([AllowAny])
+# def make_jwt_token_api_view(request):
+#     """
+#     API view для создания JWT токена.
+#     POST запрос ожидает данные в формате, указанном в JwtSerializer.
+#     """
+#
+#     if request.method == 'POST':
+#         serializer = JwtSerializer(data=request.data)
+#         if serializer.is_valid(raise_exception=True):
+#             user = get_object_or_404(
+#                 User, username=serializer.validated_data['username']
+#             )
+#             token = serializer.validated_data['confirmation_code']
+#             if default_token_generator.check_token(user, token):
+#                 access_token = str(AccessToken.for_user(user))
+#                 return Response({'token': access_token}, status=status.HTTP_200_OK)
+#             return Response(
+#                 {'confirmation code': 'Некорректный код подтверждения!'},
+#                 status=status.HTTP_400_BAD_REQUEST
+#             )

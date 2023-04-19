@@ -2,19 +2,20 @@ import uuid
 from django.conf import settings
 from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
+from django.contrib.auth.tokens import default_token_generator
 
 from users.models import User
 
 
 def send_email_confirmation(username):
-    """Отправка кода подтверждения по email."""
+    """
+    Отправляет email с кодом подтверждения пользователю.
+    """
     user = get_object_or_404(User, username=username)
-    confirmation_code = str(uuid.uuid3(uuid.NAMESPACE_DNS, username))
-    user.confirmation_code = confirmation_code
+    token = default_token_generator.make_token(user)
     mail_header = 'Регистрация пользователя завершена успешно!'
-    mail_body = f'Ваш код для получения JWT токена {user.confirmation_code}'
+    mail_body = f'Ваш код для получения JWT токена {token}'
     send_mail(mail_header, mail_body, settings.EMAIL_HOST_USER, [user.email])
-    user.save()
 
 
 def check_user_in_base(request):
