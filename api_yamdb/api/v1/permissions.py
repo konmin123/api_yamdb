@@ -15,7 +15,6 @@ class IsAdminSuperuserUserOrReadOnly(permissions.BasePermission):
     """
     Права доступа для админа, модератера, суперюзера и автора.
     """
-
     def has_permission(self, request, view):
         return (request.method in permissions.SAFE_METHODS
                 or request.user.is_authenticated)
@@ -31,7 +30,6 @@ class IsAdminOrReadOnly(permissions.BasePermission):
     """
     Права доступа для админа, суперюзера или чтение.
     """
-
     def has_permission(self, request, view):
         if request.user.is_authenticated:
             return request.user.role == 'admin' or request.user.is_superuser

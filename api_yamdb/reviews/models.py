@@ -1,7 +1,9 @@
+from api.v1.service import actual_year
+from reviews.validators import validate_year
+from users.models import User
+
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
-
-from users.models import User
 
 
 class Category(models.Model):
@@ -33,14 +35,13 @@ class Title(models.Model):
         'Название произведения',
         max_length=256
     )
-    year = models.PositiveSmallIntegerField(
+    year = models.IntegerField(
         'Год публикации',
         null=False,
         blank=True,
-        db_index=True,
         validators=(
             MinValueValidator(1, 'Минимальный год : 1'),
-            MaxValueValidator(2023, 'Максимальный год: 2023')
+            validate_year
         ),
     )
     description = models.TextField(
@@ -62,6 +63,13 @@ class Title(models.Model):
     class Meta:
         verbose_name = 'Произведение'
         verbose_name_plural = 'Произведения'
+
+        constraints = [
+            models.CheckConstraint(
+                check=models.Q(year__lte=actual_year()),
+                name='year_cannot_be_in_future'
+            )
+        ]
 
     def __str__(self):
         return self.name
