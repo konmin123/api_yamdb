@@ -30,6 +30,6 @@ def check_user_in_base(request):
 
 def actual_year():
     """
-    "Функция actual_year" возвращает текущий год в формате int.
+    Функция actual_year возвращает текущий год в формате int.
     """
     return dt.datetime.now().year
