@@ -137,18 +137,16 @@ class MakeJwtTokenAPIView(APIView):
 
     def post(self, request):
         serializer = JwtSerializer(data=request.data)
-        if serializer.is_valid(raise_exception=True):
-            user = get_object_or_404(
-                User, username=serializer.data['username']
-            )
-            confirmation_code = serializer.data['confirmation_code']
-            if default_token_generator.check_token(user, confirmation_code):
-                token = str(AccessToken.for_user(user))
-                return Response({'token': token}, status=status.HTTP_200_OK)
-            return Response(
-                {'confirmation code': 'Некорректный код подтверждения!'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+        serializer.is_valid(raise_exception=True)
+        user = get_object_or_404(User, username=serializer.data['username'])
+        confirmation_code = serializer.data['confirmation_code']
+        if default_token_generator.check_token(user, confirmation_code):
+            token = str(AccessToken.for_user(user))
+            return Response({'token': token}, status=status.HTTP_200_OK)
+        return Response(
+            {'confirmation code': 'Некорректный код подтверждения!'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
 
 
 class SignUpAPIView(APIView):

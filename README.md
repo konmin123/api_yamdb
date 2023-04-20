@@ -64,32 +64,38 @@ python manage.py runserver
 ```
 POST /api/v1/auth/signup/
 ```
+тело запроса: <br>
+{"username": "some_username","email": "email@yandex.ru"} <br>
+ответ: <br>
+{"username": "some_username","email": "email@yandex.ru"} <br>
+
+***Получение JWT токена:***
+```
+POST api/v1/auth/token/
+```
+тело запроса: <br>
+{"username": "some_username", "confirmation_code": "bmz33w-324ec1a6a945b7e49158347f4ebee896"} <br>
+
+ответ: <br>
+{"token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjgyMDk5NDczLCJpYXQiOjE2ODIwMTMwNzMsImp0aSI6ImVkOTIxNTg3ZGU0NDQwYjRhMDdjNDg2OGY4ZTg5N2NjIiwidXNlcl9pZCI6Mn0._kSa_1V3pzbfWhNEjklEpcpH1xYu8r1d2EiBUpksc94"} <br>
 
 ***Получение данных своей учетной записи:***
 ```
 GET /api/v1/users/me/
 ```
+тело запроса: <br>
+пустое <br>
 
-***Добавление новой категории:***
-```
-POST /api/v1/categories/
-```
+ответ: <br>
+{"username":"some_username","email":"email@yandex.ru","first_name":"","last_name":"","bio":"","role":"user"}<br>
 
-***Удаление категории:***
-```
-DELETE /api/v1/categories/{slug}
-```
-
-***Добавление комментария к отзыву:***
-```
-POST /api/v1/titles/{title_id}/reviews/{review_id}/comments/  
-```
 
 ## Документация к проекту:
 
-***Документация для API после установки доступна по адресу:***
+***Документация для API после установки доступна по адресам:***
 ```
 http://127.0.0.1:8000/redoc/
+http://127.0.0.1:8000/docs/
 ```
 
 ## Технологии:
