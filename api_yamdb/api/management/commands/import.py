@@ -20,7 +20,9 @@ CONTENT_DIR = settings.BASE_DIR / 'static/data'
 
 
 class Command(BaseCommand):
-    help = "Save randomly generated stock record values."
+    """
+    Импортирует данные для конкретных моделей из .csv файлов.
+    """
 
     def add_arguments(self, parser):
         parser.add_argument(
