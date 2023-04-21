@@ -1,7 +1,9 @@
-from reviews.models import Comment, Review, Category, Genres, Title
 from rest_framework import serializers
 
+from reviews.models import Comment, Review, Category, Genres, Title
 from users.models import User
+from .validators import (validate_me, validate_username_unique,
+                         validate_email_unique)
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -10,11 +12,7 @@ class UserSerializer(serializers.ModelSerializer):
         fields = (
             'username', 'email', 'first_name', 'last_name', 'bio', 'role'
         )
-
-    def validate(self, data):
-        if data.get('username') == 'me':
-            raise serializers.ValidationError('Username указан неверно!')
-        return data
+        validators = [validate_me]
 
 
 class SignUpUserSerializer(serializers.Serializer):
@@ -25,22 +23,12 @@ class SignUpUserSerializer(serializers.Serializer):
     )
     email = serializers.EmailField(max_length=254, required=True)
 
-    def validate(self, data):
-        username = data.get('username')
-        email = data.get('email')
-        if username == 'me':
-            raise serializers.ValidationError('Username указан неверно!')
-
-        if User.objects.filter(username=username).exists():
-            user = User.objects.get(username=username)
-            if user.email != email:
-                raise serializers.ValidationError('Не уникальное имя!')
-
-        if User.objects.filter(email=email).exists():
-            user = User.objects.get(email=email)
-            if user.username != username:
-                raise serializers.ValidationError('Не уникальный email!')
-        return data
+    class Meta:
+        validators = [
+            validate_me,
+            validate_username_unique,
+            validate_email_unique
+        ]
 
 
 class JwtSerializer(serializers.Serializer):
