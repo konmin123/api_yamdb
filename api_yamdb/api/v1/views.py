@@ -160,7 +160,7 @@ class SignUpAPIView(APIView):
         serializer.is_valid(raise_exception=True)
         username = request.data.get('username')
         email = request.data.get('email')
-        user = User.objects.get_or_create(username=username, email=email)[0]
+        user, _ = User.objects.get_or_create(username=username, email=email)
         confirmation_code = default_token_generator.make_token(user)
         send_email_confirmation(user, confirmation_code)
         return Response(
