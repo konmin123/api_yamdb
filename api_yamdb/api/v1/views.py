@@ -20,7 +20,7 @@ from .serializers import (
     ReviewSerializer, CommentSerializer, CategorySerializer, GenreSerializer,
     TitleSerializer, TitleListSerializer
 )
-from .serializers import UserSerializer, JwtSerializer
+from .serializers import UserSerializer, JwtSerializer, SignUpUserSerializer
 from .service import send_email_confirmation
 
 
@@ -156,16 +156,11 @@ class SignUpAPIView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
+        serializer = SignUpUserSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
         username = request.data.get('username')
         email = request.data.get('email')
-
-        if User.objects.filter(username=username, email=email).exists():
-            user = User.objects.filter(username=username, email=email)[0]
-        else:
-            serializer = UserSerializer(data=request.data)
-            serializer.is_valid(raise_exception=True)
-            user = User.objects.create(username=username, email=email)
-
+        user = User.objects.get_or_create(username=username, email=email)[0]
         confirmation_code = default_token_generator.make_token(user)
         send_email_confirmation(user, confirmation_code)
         return Response(
