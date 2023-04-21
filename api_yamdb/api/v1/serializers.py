@@ -17,6 +17,32 @@ class UserSerializer(serializers.ModelSerializer):
         return data
 
 
+class SignUpUserSerializer(serializers.Serializer):
+    username = serializers.RegexField(
+        regex=r'^[\w.@+-]+$',
+        max_length=150,
+        required=True
+    )
+    email = serializers.EmailField(max_length=254, required=True)
+
+    def validate(self, data):
+        username = data.get('username')
+        email = data.get('email')
+        if username == 'me':
+            raise serializers.ValidationError('Username указан неверно!')
+
+        if User.objects.filter(username=username).exists():
+            user = User.objects.get(username=username)
+            if user.email != email:
+                raise serializers.ValidationError('Не уникальное имя!')
+
+        if User.objects.filter(email=email).exists():
+            user = User.objects.get(email=email)
+            if user.username != username:
+                raise serializers.ValidationError('Не уникальный email!')
+        return data
+
+
 class JwtSerializer(serializers.Serializer):
     username = serializers.CharField(max_length=200, required=True)
     confirmation_code = serializers.CharField(max_length=200, required=True)
