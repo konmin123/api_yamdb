@@ -1,14 +1,18 @@
 from datetime import timedelta
+import os
 from pathlib import Path
+from dotenv import load_dotenv
 
+
+load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'p&l%385148kslhtyn^##a1)ilz@4zqj=rq&agdol^##zgl9(vs'
+SECRET_KEY = os.environ["SECRET_KEY"]
 
-DEBUG = True
+DEBUG = int(os.environ.get("DEBUG", default=0))
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = [host for host in os.environ["ALLOWED_HOSTS"].split()]
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -23,7 +27,6 @@ INSTALLED_APPS = [
     'api.v1.apps.ApiConfig',
     'users.apps.UsersConfig',
     'reviews.apps.ReviewsConfig',
-    # 'rest_framework_simplejwt',
 ]
 
 MIDDLEWARE = [
