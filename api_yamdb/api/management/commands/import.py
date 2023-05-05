@@ -9,7 +9,7 @@ CSV_PATH = 'static/data/'
 
 FOREIGN_KEY_FIELDS = ('category', 'author')
 
-DICT = {
+CSV_FILES = {
     User: 'users.csv',
     Genres: 'genre.csv',
     Category: 'category.csv',
@@ -43,9 +43,9 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **kwargs):
-        for model in DICT:
+        for model in CSV_FILES:
             try:
-                with open(CSV_PATH + DICT[model],
+                with open(CSV_PATH + CSV_FILES[model],
                           newline='',
                           encoding='utf8') as csv_file:
 
@@ -53,12 +53,12 @@ class Command(BaseCommand):
                         model.objects.all().delete()
                         self.stdout.write(
                             self.style.SUCCESS(
-                                f'Записи {DICT[model][:-4]} удалены.'))
+                                f'Записи {CSV_FILES[model][:-4]} удалены.'))
 
                     csv_serializer(csv.DictReader(csv_file), model)
                     self.stdout.write(
                         self.style.SUCCESS(
-                            f'Записи {DICT[model]} созданы.'))
+                            f'Записи {CSV_FILES[model]} созданы.'))
 
             except Exception as error:
                 CommandError(error)
